@@ -170,7 +170,7 @@ void export_colored_svg(std::string file_name, const MatrixX2rd& V, const Eigen:
         auto p3 = V.row(F(i, 2));
         svg_str << "<polygon points=\"" << p1.x() << ',' << p1.y() << ' '
                 << p2.x() << ',' << p2.y() << ' '
-                << p3.x() << ',' << p3.y() << "\" style=\"fill:rgb("
+                << p3.x() << ',' << p3.y() << "\" style=\" stroke-width:0.01; fill:rgb("
                 << color(i, 0) << ',' << color(i, 1) << ',' << color(i, 2) << ")\" />\n";
     }
 
