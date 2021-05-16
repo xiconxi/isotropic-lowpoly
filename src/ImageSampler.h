@@ -222,10 +222,13 @@ public:
 
     double geometric_median(const Point2d& p1, const Point2d& p2, const Point2d& p3) const  {
         std::vector<Eigen::Vector3d> _pts;
-        Point2d pc = (p1+p2+p3)/3.0;
-        _pts.push_back(Eigen::Vector3d(pc.x(), pc.y(), 1)* d(pc));
-        for(Point2d p: TriOverRaster(p1, p2, p3) )
-            _pts.push_back(Eigen::Vector3d(p.x(), p.y(), 1)* d(p));
+        for(int i = 0; i < 10; i++) {
+            Eigen::RowVector3i v = Eigen::RowVector3i::Random().cwiseAbs();
+            v[0] = v[0]%5+1; v[1] = v[1]%5+1; v[2] = v[2]%5+1;
+            Point2d pc = (p1*v[0]+p2*v[1]+p3*v[2])/v.sum();
+            _pts.push_back(Eigen::Vector3d(pc.x(), pc.y(), d(pc)));
+        }
+
         Eigen::MatrixX3d pts(_pts.size(), 3);
         for(int i = 0; i < pts.rows(); i++) pts.row(i) = _pts[i];
         Eigen::RowVector3d median = pts.colwise().mean(), median_new;

@@ -14,4 +14,4 @@ add_executable(lowpoly_cvt
         src/lowpoly_cvt.cpp
         src/JCVoronoi.cpp
         src/IOUtils.cpp src/IOUtils.h)
-#configure_file(python/run.py ${CMAKE_BINARY_DIR}/run.py COPYONLY)
+configure_file(python/run.py ${CMAKE_BINARY_DIR}/run.py COPYONLY)
