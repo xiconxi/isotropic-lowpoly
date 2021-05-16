@@ -1,6 +1,6 @@
-# Isotropic Triangular Image Lowpoly
+# Semi-Isotropic Triangular Image Lowpoly
 
-A fast lightweight implement of image lowpoly base on lightweight libs 
+A fast lightweight implement of semi-isotropic triangular image lowpoly via centroid voronoid diagram.
 
 |                           |                                                         |      |
 | ------------------------------------------------ | ------------------------------------------------------- | ---- |
