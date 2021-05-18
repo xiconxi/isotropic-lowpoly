@@ -221,27 +221,15 @@ public:
     }
 
     double geometric_median(const Point2d& p1, const Point2d& p2, const Point2d& p3) const  {
-        std::vector<Eigen::Vector3d> _pts;
-        for(int i = 0; i < 10; i++) {
+        std::vector<double> ds;
+        for(int i = 0; i < 30; i++) {
             Eigen::RowVector3i v = Eigen::RowVector3i::Random().cwiseAbs();
             v[0] = v[0]%5+1; v[1] = v[1]%5+1; v[2] = v[2]%5+1;
             Point2d pc = (p1*v[0]+p2*v[1]+p3*v[2])/v.sum();
-            _pts.push_back(Eigen::Vector3d(pc.x(), pc.y(), d(pc)));
+            ds.push_back(d(pc));
         }
-
-        Eigen::MatrixX3d pts(_pts.size(), 3);
-        for(int i = 0; i < pts.rows(); i++) pts.row(i) = _pts[i];
-        Eigen::RowVector3d median = pts.colwise().mean(), median_new;
-        for(int iter = 0; iter < 10; iter++) {
-            median_new.setZero();
-            double ww = 0, w;
-            for(int i = 0; i < pts.rows(); i++) {
-                w = 1.0/( (pts.row(i)-median).squaredNorm()+1e-4 );
-                median_new += pts.row(i) * w;
-                ww += w;
-            }
-        }
-        return median.z();
+        std::sort(ds.begin(), ds.end());
+        return ds[ds.size()/2];
     }
 
 
@@ -260,9 +248,10 @@ public:
     using Eigen::Matrix<T, Dim, 1>::Matrix;
     virtual ~EigenLet() = default;
 
-    void rotate() {
+    EigenLet<T, Dim>& unique() {
         auto max_it = std::max_element(EigenLet::data(), EigenLet::data()+EigenLet::size());
         std::rotate(EigenLet::data(), max_it, EigenLet::data()+EigenLet::size());
+        return *this;
     }
 
     bool operator<(const EigenLet<T, Dim>& other) const {

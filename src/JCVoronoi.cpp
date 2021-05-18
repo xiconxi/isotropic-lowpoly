@@ -8,6 +8,15 @@
 
 #include <set>
 #include <unordered_map>
+#include <map>
+#include <numeric>
+
+const float eps = std::numeric_limits<double>::epsilon()*20;
+
+bool greater(const jcv_point& lhs, const jcv_point& rhs) {
+    return std::abs(lhs.x - rhs.x) < eps ? ( lhs.y - rhs.y > eps): (lhs.x - rhs.x  > eps); // 2078 5954
+//    return lhs.x == rhs.x ? (lhs.y > rhs.y): lhs.x > rhs.x; // 4490 5948
+}
 
 
 jcv_rect bounding_rect{0, 0, -1, -1};
@@ -16,44 +25,51 @@ jcv_rect bounding_rect{0, 0, -1, -1};
 void delaunay_triangulation(MatrixX2rd& points_, MatrixX2rd& V, Eigen::MatrixX3i& F) {
     jcv_diagram diagram_{nullptr};
     jcv_diagram_generate(points_.rows(), (jcv_point*)points_.data(), &bounding_rect, 0, &diagram_);
-
+    std::map<jcv_point, int, decltype(greater)*> V_map(greater);
     using TriLet = EigenLet<int, 3> ;
     std::set<TriLet> TMap;
     const jcv_site* sites = jcv_diagram_get_sites(&diagram_);
-//    for (int i = 0; i < diagram_.numsites; ++i)
-//        V_map[ sites[i].p ] = sites[i].index;
 
     for (int i = 0; i < diagram_.numsites; ++i) {
         for(auto graph_edge = sites[i].edges; graph_edge; graph_edge = graph_edge->next) {
             auto next_edge = graph_edge->next ? graph_edge->next: sites[i].edges;
             jcv_site* curr_neighbor = graph_edge->neighbor;
             jcv_site* next_neighbor = next_edge->neighbor;
-//            if(V_map.find(graph_edge->pos[0]) == V_map.end())
-//                V_map[graph_edge->pos[0]] = V_map.size();
-//            if(V_map.find(graph_edge->pos[1]) == V_map.end())
-//                V_map[graph_edge->pos[1]] = V_map.size();
             if(curr_neighbor && next_neighbor) {
                 TriLet triangle(curr_neighbor->index, sites[i].index,  next_neighbor->index);
-                triangle.rotate();
-                if(TMap.find(triangle) == TMap.end())
-                    TMap.insert(triangle);
-//                triangles.push_back({sites[i].p, curr_neighbor->p, next_neighbor->p});
+                TMap.insert(triangle.unique());
+            }else {
+                if(V_map.find(graph_edge->pos[0]) == V_map.end())
+                    V_map[graph_edge->pos[0]] = V_map.size();
+                if(V_map.find(graph_edge->pos[1]) == V_map.end())
+                    V_map[graph_edge->pos[1]] = V_map.size();
+                size_t v0 = V_map[graph_edge->pos[0]];
+                size_t v1 = V_map[graph_edge->pos[1]];
+
+                if (curr_neighbor && next_neighbor == nullptr) {
+                    TriLet triangle(curr_neighbor->index, sites[i].index,  v1+diagram_.numsites);
+                    TMap.insert(triangle.unique());
+                } else if (curr_neighbor == nullptr && next_neighbor) {
+                    TriLet triangle1(v0+diagram_.numsites, sites[i].index,  v1+diagram_.numsites);
+                    TMap.insert(triangle1.unique());
+
+                    TriLet triangle(v1+diagram_.numsites, sites[i].index,  next_neighbor->index);
+                    TMap.insert(triangle.unique());
+                }else {
+                    TriLet triangle1( sites[i].index,  v0+diagram_.numsites,v1+diagram_.numsites);
+                    TMap.insert(triangle1.unique());
+                }
             }
-//            else if (curr_neighbor && next_neighbor == nullptr) {
-//                triangles.push_back({sites[i].p, curr_neighbor->p, graph_edge->pos[1]});
-//            }else if (curr_neighbor == nullptr && next_neighbor) {
-//                triangles.push_back({sites[i].p, graph_edge->pos[0], graph_edge->pos[1]});
-//                triangles.push_back({sites[i].p, graph_edge->pos[1], next_neighbor->p});
-//            }else {
-//                triangles.push_back({sites[i].p, graph_edge->pos[0], graph_edge->pos[1]});
-//            }
+
         }
     }
 
-    V.resize(diagram_.numsites, 2);
+    V.resize(diagram_.numsites+V_map.size(), 2);
     F.resize(TMap.size(), 3);
     for (int i = 0; i < diagram_.numsites; ++i)
         V.row(sites[i].index) = Eigen::RowVector2d(sites[i].p.x, sites[i].p.y);
+    for (auto kv: V_map)
+        V.row(diagram_.numsites+kv.second) = Eigen::RowVector2d(kv.first.x, kv.first.y);
 
     size_t idx = 0;
     for (auto it = TMap.begin(); it != TMap.end(); it++)
@@ -68,7 +84,7 @@ Eigen::MatrixX3i tri_tri_adjacency(const Eigen::MatrixX3i& F) {
     for(size_t fi= 0; fi < F.rows(); fi++) {
         for(int i = 0; i < 3; i++) {
             EigenLet<int, 2> e(F(fi, i), F(fi, (i+1)%3));
-            e.rotate();
+            e.unique();
             if(edge_mark.find(e) != edge_mark.end()) {
                 auto v_pair = edge_mark[e];
                 TT(v_pair[0], v_pair[1]) = fi;

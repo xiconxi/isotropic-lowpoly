@@ -24,9 +24,33 @@ import concurrent.futures
 #     os.system(command)
 
 if __name__ == "__main__":
-    os.system("./lowpoly_cvt ../data/gradient/1.bmp ../data/1.jpeg ../imgs/1 5000 15")
-    os.system("./lowpoly_cvt ../data/gradient/2.bmp ../data/2.jpeg ../imgs/2 5000 15")
-    os.system("./lowpoly_cvt ../data/gradient/3.bmp ../data/3.jpeg ../imgs/3 5000 15")
+    import sys 
+    import time
+
+    sample_rate = float(sys.argv[1]) if len(sys.argv) > 1 else 0.01
+    n_iter  = float(sys.argv[2]) if len(sys.argv) > 2 else 20
+
+    for i in range(1, 7):
+        cmd = "./lowpoly_cvt ../data/gradient/" + str(i)+ ".bmp ../data/"+str(i)+".jpeg ../imgs/svg/"+str(i)+ " "+ str(sample_rate) +" " + str(n_iter)
+        print(cmd)
+        os.system(cmd)
+
+        # os.system("cairosvg -o ../imgs/"+str(i)+"lowpoly_tri.png  ../imgs/svg/"+str(i)+"lowpoly_tri.svg")
+        # os.system("cairosvg -o ../imgs/"+str(i)+"lowpoly_point.png  ../imgs/svg/"+str(i)+"lowpoly_point.svg")
+
+    
+
+    for i in range(1, 7):
+        os.system("cairosvg -o ../imgs/"+str(i)+"lowpoly_tri.png  ../imgs/svg/"+str(i)+"lowpoly_tri.svg")
+        os.system("cairosvg -o ../imgs/"+str(i)+"lowpoly_point.png  ../imgs/svg/"+str(i)+"lowpoly_point.svg")
+
+
+    # os.system("./lowpoly_cvt ../data/gradient/1.bmp ../data/1.jpeg ./1 5000 5")
+    # os.system("./lowpoly_cvt ../data/gradient/2.bmp ../data/2.jpeg ./2 5000 15")
+    # os.system("./lowpoly_cvt ../data/gradient/3.bmp ../data/3.jpeg ./3 5000 15")
+    # os.system("cairosvg -o 1lowpoly_tri.png 1lowpoly_tri.svg")
+    # os.system("cairosvg -o 2lowpoly_tri.png 2lowpoly_tri.svg")
+    # os.system("cairosvg -o 3lowpoly_tri.png 3lowpoly_tri.svg")
     # os.system("mkdir -p output/videos")
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #     for file in executor.map(weight_cvt, list(glob.glob("../data/*.bmp"))):

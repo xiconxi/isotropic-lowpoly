@@ -19,21 +19,30 @@ def guide_filtering(p, I, r, epsilon):
 
     return  (a * I + b_mean * 0.1).astype(np.uint8)
 
-if __name__ == '__main__':
-    I = cv2.imread('data/1.jpeg')
-    I_gray, I_boost = cv2.decolor(I)
-    I_0 = cv2.ximgproc.l0Smooth(I_gray)
-    gradient = guide_filtering(I_gray, I_0, 5, (0.05*255) ** 2)
+def process_image(i):
+    I = cv2.imread('../data/'+str(i)+'.jpeg', cv2.IMREAD_COLOR)
+    gradient = np.zeros_like(I)
+    for c in range(I.shape[2]):
+        smoothed = cv2.bilateralFilter(I[:,:,c], 5, 20, 100)
+        gradient[:, :, c] = guide_filtering(I[:,:,c], smoothed, 10, (0.03*255) ** 2)
+        # gradient[np.where(gradient < 100)] =  0
+        gradient[:, :, c] = guide_filtering(gradient[:, :, c], smoothed, 3, (0.15*255) ** 2)
+        gradient[:, :, c] = gradient[:, :, c] * 255.0/np.max(gradient[:, :, c])
+        # print(np.max(gradient[:, :, c]))
+    gradient[:, :, 0] = np.max(gradient, axis=2)
+    gradient[:, :, 1] = gradient[:, :, 0]
+    gradient[:, :, 2] = gradient[:, :, 0]
 
-    print(np.unique(gradient))
+    gradient[np.where(gradient < 20)] = 0
 
 
-    # gradient[np.where(gradient < 10)] = 0
-    # gradient[np.where(gradient > 100)] = 255
-    gradient[np.where(gradient < 30)] = 0
-
-    cv2.imwrite("data/gradient/1.bmp", gradient)
+    cv2.imwrite("../data/gradient/"+str(i)+".bmp", gradient)
 
 
-    cv2.imshow("img", np.concatenate([I_gray, I_0, gradient], axis=1))
+    cv2.imshow("img", np.concatenate([I, gradient  ], axis=1))
+
     cv2.waitKey()
+
+if __name__ == '__main__':
+    for i in range(1, 6):
+        process_image(i)

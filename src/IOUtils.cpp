@@ -37,15 +37,14 @@ bool read_density(std::string filename, Eigen::MatrixXd& R, Eigen::MatrixXd& G, 
     std::uint8_t* img = stbi_load(filename.c_str(), &width_, &height_, &n_, 3);
     if ( img == nullptr) return false;
 
-    assert(n_ >= 3);
     R.resize(height_, width_);
     G.resize(height_, width_);
     B.resize(height_, width_);
     for (int j = 0; j < height_; j++)
         for (int i = 0; i < width_; i++) {
-            R(j, i) = img[(j * width_ + i)*3+0];
-            G(j, i) = img[(j * width_ + i)*3+1];
-            B(j, i) = img[(j * width_ + i)*3+2];
+                R(j, i) = img[(j * width_ + i)*3+0];
+                G(j, i) = img[(j * width_ + i)*3+1];
+                B(j, i) = img[(j * width_ + i)*3+2];
         }
 
     stbi_image_free(img);
@@ -170,7 +169,7 @@ void export_colored_svg(std::string file_name, const MatrixX2rd& V, const Eigen:
         auto p3 = V.row(F(i, 2));
         svg_str << "<polygon points=\"" << p1.x() << ',' << p1.y() << ' '
                 << p2.x() << ',' << p2.y() << ' '
-                << p3.x() << ',' << p3.y() << "\" style=\" stroke-width:0.01; fill:rgb("
+                << p3.x() << ',' << p3.y() << "\" style=\" stroke-width:0; stroke: none; fill:rgb("
                 << color(i, 0) << ',' << color(i, 1) << ',' << color(i, 2) << ")\" />\n";
     }
 

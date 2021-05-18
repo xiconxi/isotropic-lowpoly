@@ -14,35 +14,37 @@ int main(int argc, char** argv) {
     }
     Eigen::MatrixXd gradient;
     assert( read_density(argv[1], gradient) );
-    size_t n_sample = std::stoi(argv[4]);
+    size_t n_sample = std::stod(argv[4]) > 1 ? std::stoi(argv[4]): gradient.size() * std::stod(argv[4]);
     size_t n_iter = std::stoi(argv[5]);
-    double edge_ratio = double( gradient.count() ) / gradient.size() ;
+    double edge_ratio = std::min( gradient.mean() / 255 * 4, 0.3 ) ;
+    std::cout << "edge ratio: " << edge_ratio << std::endl;
     ImageSampler sampler1(gradient);
     sampler1.array() = sampler1.array().max(1).min(1).eval();
-    std::cout << gradient.count() << ' ' << gradient.size() << std::endl;
     MatrixX2rd Pts1 = sampler1.dice_select(n_sample*(1-edge_ratio));
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0; i < 3; i++) {
         double abs_changed =  cvt_lloyd_relaxation(Pts1, sampler1);
         std::cout << "uniform: " << i << ' ' << abs_changed << std::endl;
-//        export_svg(Pts1, std::to_string(i)+"uniform.svg");
+//        export_svg(Pts1, std::to_string(i)+"uniform.svg"); 
     }
 
     ImageSampler sampler2(gradient);
-    sampler2.array() = sampler2.array().pow(3);
+    sampler2.array() = gradient.array().pow(0.5);
     MatrixX2rd Pts2 = sampler2.dice_select(n_sample* edge_ratio );
 
     MatrixX2rd Pts(Pts1.rows()+Pts2.rows(), 2);
     Pts.topRows(Pts1.rows()) = Pts1;
     Pts.bottomRows(Pts2.rows()) = Pts2;
 //    export_svg(Pts, "gradient.svg");
+//    export_svg(Pts, std::string(argv[3])+"initial.svg");
 
 
-    sampler2.array() = sampler2.array().pow(0.5/3.0).max(0.1);
+    sampler2.array() = gradient.array().pow(2).max(0.1);
     for(int i = 0; i < n_iter; i++) {
         double abs_changed =  cvt_lloyd_relaxation(Pts, sampler2);
         std::cout << "lloyd: " << i << ' ' << abs_changed << std::endl;
 //        export_svg(Pts, std::to_string(i)+"lloyd.svg");
     }
+    export_svg(Pts, std::string(argv[3])+"lowpoly_point.svg");
 
     MatrixX2rd V2;
     Eigen::MatrixX3i F2;
@@ -52,7 +54,6 @@ int main(int argc, char** argv) {
     ImageSampler R(rgb[0]), G(rgb[1]), B(rgb[2]);
 
     export_colored_svg(std::string(argv[3])+"lowpoly_tri.svg", V2, F2, R, G, B);
-    export_svg(Pts, std::string(argv[3])+"lowpoly_point.svg");
 //    export_colored_off("cvt.off", V2, F2, R, G, B );
 //
 //    export_colored_obj("cvt_approximate", V2, F2, R, G, B);
