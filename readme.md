@@ -2,7 +2,7 @@
 
 A lightweight implementation of semi-isotropic triangular image lowpoly via Centroid Voronoi Diagram.
 
-|                           |                                                         |      |
+|          Original Image                 |      LowPoly Image with 2% points                    |   2% Points    |
 | ------------------------------------------------ | ------------------------------------------------------- | ---- |
 | <img width="512" alt="1" src="./data/1.jpeg">  | <img width="512"  src="./imgs/1lowpoly_tri.png">  | <img width="512"  src="./imgs/1lowpoly_point.png">      |
 | <img width="512" alt="2" src="./data/2.jpeg">  | <img width="512"  src="./imgs/2lowpoly_tri.png">      | <img width="512"  src="./imgs/2lowpoly_point.png"> |
