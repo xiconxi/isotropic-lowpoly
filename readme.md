@@ -1,6 +1,6 @@
 # Semi-Isotropic Triangular Image Lowpoly
 
-A fast lightweight implement of semi-isotropic triangular image lowpoly via centroid voronoid diagram.
+A lightweight implementation of semi-isotropic triangular image lowpoly via Centroid Voronoi Diagram.
 
 |                           |                                                         |      |
 | ------------------------------------------------ | ------------------------------------------------------- | ---- |
